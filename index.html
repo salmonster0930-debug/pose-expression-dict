@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>표정·포즈 사전</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Age gate -->
+  <div id="age-gate" class="age-gate" role="dialog" aria-modal="true" aria-labelledby="age-title">
+    <div class="age-card">
+      <h1 id="age-title">성인 확인</h1>
+      <p>이 사이트는 <strong>만 20세 이상</strong>만 이용할 수 있습니다.</p>
+      <p class="age-note">태그는 성인 내용일 수 있으나, 예시 그림은 전부 옷 입은 SFW입니다.</p>
+      <div class="age-actions">
+        <button type="button" id="age-yes" class="btn btn-primary">만 20세 이상입니다</button>
+        <button type="button" id="age-no" class="btn btn-ghost">만 20세 미만입니다</button>
+      </div>
+      <p id="age-denied" class="age-denied hidden">이용할 수 없습니다.</p>
+    </div>
+  </div>
+
+  <div id="app" class="app hidden">
+    <header class="header">
+      <div class="header-inner">
+        <h1 class="title">표정·포즈 사전</h1>
+        <p class="banner">태그는 성인 내용일 수 있음 · 예시 그림은 전부 옷 입은 SFW</p>
+        <div class="search-wrap">
+          <label for="search" class="sr-only">검색</label>
+          <input type="search" id="search" placeholder="라벨·태그 검색…" autocomplete="off" />
+          <span id="result-count" class="result-count"></span>
+        </div>
+      </div>
+    </header>
+
+    
+    <section class="featured" aria-label="착의 예시">
+      <h2 class="featured-title">착의 예시 (필터용)</h2>
+      <div class="featured-row">
+        <figure><img src="examples/expr-seductive-smile.png" alt="유혹 미소" /><figcaption>표정 · 유혹 미소</figcaption></figure>
+        <figure><img src="examples/expr-ahegao-clothed.png" alt="아헤가오 착의" /><figcaption>표정 · 아헤(터틀넥)</figcaption></figure>
+        <figure><img src="examples/pose-standing-v.png" alt="서서 브이" /><figcaption>포즈 · 서서 브이</figcaption></figure>
+        <figure><img src="examples/pose-sitting.png" alt="앉기" /><figcaption>포즈 · 앉기</figcaption></figure>
+        <figure><img src="examples/pose-looking-back.png" alt="뒤돌아봄" /><figcaption>포즈 · 뒤돌아봄</figcaption></figure>
+        <figure><img src="examples/pose-kneeling.png" alt="무릎" /><figcaption>포즈 · 무릎</figcaption></figure>
+      </div>
+    </section>
+
+    <nav class="tabs" id="tabs" role="tablist" aria-label="카테고리"></nav>
+
+    <main class="main">
+      <div id="grid" class="grid" role="list"></div>
+      <p id="empty" class="empty hidden">검색 결과가 없습니다.</p>
+    </main>
+
+    <footer class="footer">
+      <p>총 <span id="total-count">0</span>개 · 예시 SVG는 전부 착의(SFW)</p>
+    </footer>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
