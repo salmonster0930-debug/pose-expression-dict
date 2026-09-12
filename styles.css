@@ -283,6 +283,68 @@ body {
   opacity: 0.9;
 }
 
+/* Facet chips (세부 분류) */
+.facets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0 0.15rem;
+}
+.facets-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-right: 0.15rem;
+  letter-spacing: 0.02em;
+}
+.facet {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 999px;
+  padding: 0.32rem 0.75rem;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.facet:hover {
+  color: var(--text);
+  border-color: #454b66;
+}
+.facet.active {
+  color: #fff;
+  background: linear-gradient(135deg, #c45a8c, #6d54d4);
+  border-color: transparent;
+}
+.facet .count {
+  opacity: 0.8;
+  font-weight: 500;
+  margin-left: 0.2rem;
+}
+.card-facets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0.25rem 0 0.15rem;
+}
+.chip {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.12rem 0.4rem;
+  border-radius: 999px;
+  background: #2a2438;
+  color: #d4b8e8;
+  border: 1px solid #453a58;
+}
+.chip.sexy-expr { background: #2a1f35; color: #e8b4d4; border-color: #5a3a55; }
+.chip.sexy-pose { background: #1f2735; color: #b4c8e8; border-color: #3a4a5a; }
+.chip.sex-intimate { background: #351f28; color: #e8b4b8; border-color: #5a3a42; }
+
 /* Grid */
 .main {
   margin-top: 0.85rem;

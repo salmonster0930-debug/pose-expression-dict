@@ -4,8 +4,15 @@
   const AGE_KEY = "pose-dict-age-ok-v1";
   let DATA = null;
   let activeLetter = "A";
+  let activeFacet = "all"; // all | sexy-expr | sexy-pose | sex-intimate
   let searchQuery = "";
   let toastTimer = null;
+
+  const FACET_META = {
+    "sexy-expr": { titleKo: "섹시 표정", chip: "섹시표정" },
+    "sexy-pose": { titleKo: "섹시 포즈", chip: "섹시포즈" },
+    "sex-intimate": { titleKo: "섹스·밀착", chip: "섹스·밀착" },
+  };
 
   const $ = (sel) => document.querySelector(sel);
 
@@ -749,20 +756,76 @@
   }
 
   /* ---------- UI ---------- */
+  function allItemsFlat() {
+    const out = [];
+    (DATA.categories || []).forEach((cat) => {
+      (cat.items || []).forEach((it) => out.push({ item: it, letter: cat.letter }));
+    });
+    return out;
+  }
+
+  function facetCount(facetId) {
+    if (facetId === "all") return DATA.total || 0;
+    let n = 0;
+    allItemsFlat().forEach(({ item }) => {
+      if ((item.facets || []).includes(facetId)) n += 1;
+    });
+    return n;
+  }
+
   function buildTabs() {
     const nav = $("#tabs");
     nav.innerHTML = "";
     DATA.categories.forEach((cat) => {
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = "tab" + (cat.letter === activeLetter ? " active" : "");
+      btn.className = "tab" + (cat.letter === activeLetter && activeFacet === "all" ? " active" : "");
       btn.setAttribute("role", "tab");
-      btn.setAttribute("aria-selected", cat.letter === activeLetter ? "true" : "false");
+      btn.setAttribute("aria-selected", cat.letter === activeLetter && activeFacet === "all" ? "true" : "false");
       btn.dataset.letter = cat.letter;
       btn.innerHTML = `${cat.letter} ${esc(cat.titleKo)} <span class="count">(${cat.count})</span>`;
       btn.addEventListener("click", () => {
         activeLetter = cat.letter;
+        activeFacet = "all";
         buildTabs();
+        buildFacets();
+        renderGrid();
+      });
+      nav.appendChild(btn);
+    });
+  }
+
+  function buildFacets() {
+    const nav = $("#facets");
+    if (!nav) return;
+    const label = nav.querySelector(".facets-label");
+    nav.innerHTML = "";
+    if (label) nav.appendChild(label);
+    else {
+      const span = document.createElement("span");
+      span.className = "facets-label";
+      span.textContent = "세부";
+      nav.appendChild(span);
+    }
+
+    const facets = [{ id: "all", titleKo: "전체" }].concat(DATA.facets || [
+      { id: "sexy-expr", titleKo: "섹시 표정" },
+      { id: "sexy-pose", titleKo: "섹시 포즈" },
+      { id: "sex-intimate", titleKo: "섹스·밀착" },
+    ]);
+
+    facets.forEach((f) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "facet" + (activeFacet === f.id ? " active" : "");
+      btn.setAttribute("role", "tab");
+      btn.setAttribute("aria-selected", activeFacet === f.id ? "true" : "false");
+      const n = facetCount(f.id);
+      btn.innerHTML = `${esc(f.titleKo)} <span class="count">(${n})</span>`;
+      btn.addEventListener("click", () => {
+        activeFacet = f.id;
+        buildTabs();
+        buildFacets();
         renderGrid();
       });
       nav.appendChild(btn);
@@ -774,24 +837,42 @@
   }
 
   function filteredItems() {
-    const cat = currentCategory();
-    if (!cat) return [];
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return cat.items;
-    return cat.items.filter((it) => {
-      const hay = `${it.label} ${it.tags} ${it.note || ""} ${it.id}`.toLowerCase();
-      return hay.includes(q);
-    });
+    let rows;
+    if (activeFacet !== "all") {
+      rows = allItemsFlat().filter(({ item }) => (item.facets || []).includes(activeFacet));
+    } else {
+      const cat = currentCategory();
+      if (!cat) return [];
+      rows = cat.items.map((item) => ({ item, letter: cat.letter }));
+    }
+    if (q) {
+      rows = rows.filter(({ item }) => {
+        const hay = `${item.label} ${item.tags} ${item.note || ""} ${item.id}`.toLowerCase();
+        return hay.includes(q);
+      });
+    }
+    return rows;
+  }
+
+  function facetChipsHtml(item) {
+    const facets = item.facets || [];
+    if (!facets.length) return "";
+    return `<div class="card-facets">${facets.map((f) => {
+      const meta = FACET_META[f] || { chip: f };
+      return `<span class="chip ${esc(f)}">${esc(meta.chip)}</span>`;
+    }).join("")}</div>`;
   }
 
   function renderGrid() {
     const grid = $("#grid");
     const empty = $("#empty");
-    const items = filteredItems();
+    const rows = filteredItems();
     const cat = currentCategory();
-    $("#result-count").textContent = `${items.length} / ${cat ? cat.count : 0}개`;
+    const totalHint = activeFacet === "all" ? (cat ? cat.count : 0) : facetCount(activeFacet);
+    $("#result-count").textContent = `${rows.length} / ${totalHint}개`;
 
-    if (!items.length) {
+    if (!rows.length) {
       grid.innerHTML = "";
       empty.classList.remove("hidden");
       return;
@@ -799,15 +880,17 @@
     empty.classList.add("hidden");
 
     const frag = document.createDocumentFragment();
-    items.forEach((item) => {
+    rows.forEach(({ item, letter }) => {
       const card = document.createElement("article");
       card.className = "card";
       card.setAttribute("role", "listitem");
+      const idShow = activeFacet !== "all" ? `${esc(item.id)} · ${esc(letter)}` : esc(item.id);
       card.innerHTML = `
-        <div class="card-illust">${renderIllustration(item, activeLetter)}</div>
+        <div class="card-illust">${renderIllustration(item, letter)}</div>
         <div class="card-body">
-          <div class="card-id">${esc(item.id)}</div>
+          <div class="card-id">${idShow}</div>
           <h2 class="card-label">${esc(item.label)}</h2>
+          ${facetChipsHtml(item)}
           <p class="card-tags">${esc(item.tags)}</p>
           <p class="card-note">${esc(item.note || "")}</p>
           <button type="button" class="btn btn-copy" data-tags="${esc(item.tags)}">복사</button>
@@ -837,6 +920,7 @@
   function bootApp() {
     $("#total-count").textContent = String(DATA.total);
     buildTabs();
+    buildFacets();
     renderGrid();
     $("#search").addEventListener("input", (e) => {
       searchQuery = e.target.value;
